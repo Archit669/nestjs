@@ -57,3 +57,95 @@ export class AppModule {}
 
 ## typeorm repository API
 ![alt text](./public/img/typeorm-repo-api.png)
+
+## few Extra Routes
+![alt text](./public/img/few-extra-routes.png)
+
+## controller and service methods
+![alt text](./public/img/controller-and-services-extra-routes.png)
+
+## install dependency class validator and class transformer
+``` bash
+ npm install class-validator class-transformer
+```
+
+
+## whitelist: true in validation pipes
+- This will not allow extra property except the validation rule, if client will send something extra so it will not give error but not allow the extra attributes and value
+```ts
+ app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true
+    })
+  )
+```
+
+
+## flow of creating user in database
+![alt text](./public/img/flow-create-user-in-sqllite.png)
+
+## create vs save
+![alt text](./public/img/create-vs-save.png)
+- if save is use with entity instance then hooks are executed but if you don't use save with entity , hooks are not executed.
+
+
+## typeorm findone and find
+- Locate the findOne method and update the return to look like this:
+
+  ```ts
+  findOne(id: number) {
+    return this.repo.findOneBy({ id });
+  }
+  ``` 
+
+- Locate the find method and update the return to look like this:
+
+  ```ts
+  find(email: string) {
+    return this.repo.find({ where: { email } });
+  }
+  ```
+
+
+## update in database with triggering hooks
+![alt text](./public/img/update-with-trigger-hooks.png)
+
+## excluding response properties
+
+- current way to find user
+
+  ![alt text](./public/img/current-way-find-user.png)
+
+- new way to find user (recommended by nestjs)
+
+  ![alt text](./public/img/new-way-to-find-user.png)
+
+  - add exclude decorator in column of entity that we want to exclude
+
+  - then
+
+  ``` ts
+  import {UseInterceptors, ClassSerializerInterceptor} from '@nestjs/common';
+
+   @UseInterceptors(ClassSerializerInterceptor)
+   @Get()
+   async <function_name>(){}
+
+  ```
+
+
+## problem with above approach recommend by nestjs
+
+![alt text](./public/img/old-way-interceptor-problem.png)
+
+## solution
+![alt text](./public/img/new-approach-flexible-by-dtos.png)
+
+
+## authentication from scratch
+
+- auth architecture
+![alt text](./public/img/auth-architecture.png)
+
+- user module
+![alt text](./public/img/user-module-design.png)
