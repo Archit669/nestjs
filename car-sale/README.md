@@ -149,3 +149,125 @@ export class AppModule {}
 
 - user module
 ![alt text](./public/img/user-module-design.png)
+
+## sessions 
+![alt text](./public/img/cookies.png)
+
+``` bash
+npm install cookie-session @types/cookie-session
+```
+
+```ts
+// main.ts
+import cookieSession = require('cookie-session');
+
+// inside bootstrap function
+app.use(cookieSession({
+    keys: ['asdfasdf']
+  }))
+
+```
+
+
+- we can set properties in session 
+- we can also retrieve properties from session
+
+
+## common auth system features
+
+![alt text](./public/img/common-auth-system-features.png)
+
+## create your own custom decorator
+
+```ts
+// current-user.decorator.ts
+import {
+    createParamDecorator,
+    ExecutionContext
+
+} from '@nestjs/common';
+
+export const CurrentUser = createParamDecorator(
+    (data:never, context: ExecutionContext)=>{
+        const request = context.switchToHttp().getRequest();
+        return 'hi there';
+    }
+)
+
+```
+
+
+## Access userService instance in dependency injection system using current user interceptor
+![alt text](./public/img/current-user-interceptor.png)
+
+
+## CurrentUserInterceptor
+
+```ts
+import {
+    NestInterceptor,
+    ExecutionContext,
+    CallHandler,
+    Injectable,
+} from "@nestjs/common"
+
+
+import { UsersService } from "../users.service"
+
+@Injectable()
+export class CurrentUserIntercetor implements NestInterceptor{
+    constructor(private readonly usersService: UsersService){}
+
+    async intercept(context: ExecutionContext, handler: CallHandler<any>) {
+        const request = context.switchToHttp().getRequest()
+        const {userId} = request.session || {};
+
+        if (userId){
+            const user = await this.usersService.findOne(userId);
+            request.currentUser = user;
+        }
+
+        return handler.handle()
+    }
+}
+```
+
+## CurrentUserDecorator
+
+```ts
+import {
+    createParamDecorator,
+    ExecutionContext
+
+} from '@nestjs/common';
+
+export const CurrentUser = createParamDecorator(
+    (data:never, context: ExecutionContext)=>{
+        const request = context.switchToHttp().getRequest();
+        return request.currentUser;
+    }
+)
+
+```
+
+
+## create global interceptor
+
+```ts
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { CurrentUserIntercetor } from './interceptors/current-user.interceptor';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([User])],
+  controllers: [UsersController],
+  providers: [
+    UsersService,
+    AuthService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CurrentUserIntercetor,
+    },
+  ],
+})
+
+```
