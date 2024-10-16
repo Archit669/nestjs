@@ -271,3 +271,124 @@ import { CurrentUserIntercetor } from './interceptors/current-user.interceptor';
 })
 
 ```
+
+
+## Testing
+
+### unit Testing
+- Each class is tested
+- we create a fake dependencies of class which is currently testing
+
+``` bash
+  npm run test:watch
+```
+
+
+### integeration testing
+- Each functionality as a whole is testing by intergerating with different modules
+- In intergeration testing we skip the main.ts and start from app Module
+
+``` bash
+  npm run test:e2e
+```
+
+
+## steps to configure environment variables and also configure cookies and global validation pipe in app
+
+```ts
+import { ConfigModule, ConfigService } from '@nestjs/config';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: `.env.${process.env.NODE_ENV}`,
+    }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        return {
+          type: 'sqlite',
+          database : config.get<string>('DB_NAME'),
+          synchronize: true,
+          entities: [User, Report],
+        };
+      }
+    }),
+
+    UsersModule,
+    ReportsModule,
+  ],
+  controllers: [AppController],
+  providers: [
+    AppService,
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        whitelist: true,
+      }),
+    },
+  ],
+})
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(
+        cookieSession({
+          keys: ['asdfasfd'],
+        }),
+      )
+      .forRoutes('*');
+  }
+}
+
+
+
+```
+
+
+## update start script in package.json
+
+```json
+"scripts": {
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "cross-env NODE_ENV=development nest start",
+    "start:dev": "cross-env NODE_ENV=development nest start --watch",
+    "start:debug": "cross-env NODE_ENV=development nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "cross-env NODE_ENV=test jest --watch",
+    "test:cov": "cross-env NODE_ENV=test jest --coverage",
+    "test:debug": "cross-env NODE_ENV=test node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "cross-env NODE_ENV=test jest --config ./test/jest-e2e.json --maxWorkers=1"
+  },
+
+
+```
+
+
+
+## delete database before each integeration test
+
+- setup in jest-e2e.json
+```
+"setupFilesAfterEnv": ["<rootDir>/setup.ts"]
+```
+
+- setup in test/setup.ts
+```ts
+// test/jest-e2e.json
+
+import { rm } from "fs/promises";
+import { join } from "path";
+
+global.beforeEach(async () => {
+    try {
+        await rm(join(__dirname, "..", 'test.sqlite'))
+    } catch (error) {
+        
+    }
+})
+```
