@@ -392,3 +392,20 @@ global.beforeEach(async () => {
     }
 })
 ```
+
+## Associations
+
+![alt text](./public/img/associations.png)
+
+
+![alt text](./public/img/association-relations.png)
+
+
+## Middleware , Guards and interceptors
+![alt text](./public/img/middleware-guards-interceptors.png)
+
+## DURING PRODUCTION ALWAYS SET SYNCRONIZED FLAG TO FALSE IN TYPEORM 
+
+
+## Creating and running migrations during development , test and production
+![alt text](./public/img/create-and-running-migration.png)
