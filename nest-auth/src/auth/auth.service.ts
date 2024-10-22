@@ -1,12 +1,14 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from "bcrypt";
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
 
     constructor(
-        private readonly userService: UserService
+        private readonly userService: UserService,
+        private readonly jwtService: JwtService
     ){}
 
     async register(email: string, password: string){
@@ -35,9 +37,19 @@ export class AuthService {
 
         if (!user){
 
-            throw new BadRequestException("user not found");
+            throw new NotFoundException("user not found");
         }
 
-        
+        if (!await bcrypt.compare(password, user.password)){
+            
+            throw new BadRequestException("password didn't match");
+        }   
+
+        const {id} = user;
+
+        const payload = {id, email};
+        const accessToken = this.jwtService.sign(payload);
+
+        return {accessToken};
     }
 }

@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards , Req} from '@nestjs/common';
 import { RegisterUserDto, LoginUserDto } from './dtos';
 import { UserService } from './user.service';
 import { AuthService } from 'src/auth/auth.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('user')
 export class UserController {
@@ -18,11 +19,17 @@ export class UserController {
 
     @Post("/login")
     login(@Body() body: LoginUserDto){
-        return body.email;
+        return this.authService.login(body.email, body.password);
     }
 
     @Get()
     getProfiles(){
         return this.userService.getAllUsers()
     }
+
+    @Post('/test')
+    @UseGuards(AuthGuard())
+    test(@Req() req){
+        console.log(req)
+    }   
 }
